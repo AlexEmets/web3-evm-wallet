@@ -63,7 +63,7 @@ impl Wallet {
 
     pub async fn send_transaction(&self, to: &str, amount: U256, web3_url: &str) {
         let http = Http::new(web3_url).unwrap();
-        let web3 = web3::Web3::new(http);
+        let web3_http = web3::Web3::new(http);
 
         let tx = TransactionParameters {
             nonce: None,
@@ -79,8 +79,8 @@ impl Wallet {
             max_priority_fee_per_gas: None,
         };
 
-        let signed_tx = web3.accounts().sign_transaction(tx, &self.private_key).await.unwrap();
-        let result = web3.eth().send_raw_transaction(signed_tx.raw_transaction).await.unwrap();
+        let signed_tx = web3_http.accounts().sign_transaction(tx, &self.private_key).await.unwrap();
+        let result = web3_http.eth().send_raw_transaction(signed_tx.raw_transaction).await.unwrap();
         println!("Transaction sent with hash: {:?}", result);
     }
 }

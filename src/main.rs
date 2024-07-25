@@ -8,7 +8,7 @@ use wallet::Wallet;
 #[tokio::main]
 async fn main() {
     let mut wallet = Wallet::new();
-    let testnet_url = "https://ropsten.infura.io/v3/YOUR_INFURA_PROJECT_ID";
+    let testnet_url = "https://sepolia.infura.io/v3/5baff4d94a624341b63eca02b95a2b1c";
 
     loop {
         println!("1. Create new wallet");
