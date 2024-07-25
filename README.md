@@ -22,12 +22,15 @@ Add the following dependencies to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-web3 = "0.16.0"
+secp256k1 = {version = "0.27.0", features = ["rand"]}
+web3 = "0.19.0"
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-hex = "0.4"
-secp256k1 = "0.22"
+rust-crypto = "0.2.36"
+rand = "0.8.4"
+tiny-keccak = "2.0.2"
+hex = "0.4.3"
 ```
 
 
