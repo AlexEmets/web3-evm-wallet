@@ -16,6 +16,8 @@ async fn main() {
         println!("3. Save wallet to file");
         println!("4. Check balance");
         println!("5. Send transaction");
+        println!("6. Get Counter value");
+        println!("7. Increment Counter value");
         println!("0. Exit");
 
         print!("Enter choice: ");
@@ -62,6 +64,28 @@ async fn main() {
                 let amount: U256 = amount.trim().parse().unwrap();
 
                 wallet.send_transaction(to.trim(), amount, testnet_url).await;
+            }
+            6 => {
+                print!("Enter Counter contract address: ");
+                io::stdout().flush().unwrap();
+                let mut contract_address = String::new();
+                io::stdin().read_line(&mut contract_address).unwrap();
+                
+                match wallet.get_counter(testnet_url, contract_address.trim()).await {
+                    Ok(count) => println!("Current counter value: {}", count),
+                    Err(e) => eprintln!("Error getting counter value: {:?}", e),
+                }
+            }
+            7 => {
+                print!("Enter Counter contract address: ");
+                io::stdout().flush().unwrap();
+                let mut contract_address = String::new();
+                io::stdin().read_line(&mut contract_address).unwrap();
+                
+                match wallet.increment_counter(testnet_url, contract_address.trim()).await {
+                    Ok(tx_hash) => println!("Increment transaction sent with hash: {:?}", tx_hash),
+                    Err(e) => eprintln!("Error incrementing counter: {:?}", e),
+                }
             }
             0 => break,
             _ => println!("Invalid choice. Please try again."),

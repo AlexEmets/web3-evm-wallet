@@ -3,9 +3,13 @@ use secp256k1::{Secp256k1, SecretKey, PublicKey};
 use rand::rngs::OsRng;
 use serde::{Serialize, Deserialize};
 use std::fs;
-use web3::types::{TransactionRequest, U256, TransactionParameters, AccessList, Bytes};
+use web3::types::{TransactionRequest, U256, U64, TransactionParameters, AccessList, Bytes, Address};
 use web3::transports::Http;
 use web3::signing::{Key, SecretKeyRef};
+use web3::contract::{Contract, Options};
+use std::str::FromStr;
+use web3::types::H256;
+use web3::Error as Web3Error;
 use crate::utils;
 
 pub struct Wallet {
@@ -83,4 +87,43 @@ impl Wallet {
         let result = web3_http.eth().send_raw_transaction(signed_tx.raw_transaction).await.unwrap();
         println!("Transaction sent with hash: {:?}", result);
     }
+
+    pub async fn get_counter(&self, web3_url: &str, contract_address: &str) -> Result<U256, Box<dyn std::error::Error>> {
+        let http = Http::new(web3_url)?;
+        let web3 = web3::Web3::new(http);
+        
+        let abi = include_bytes!("contracts_abi/counter_abi.json");
+        let contract_address = Address::from_str(contract_address)?;
+        let contract = Contract::from_json(web3.eth(), contract_address, abi)?;
+
+        let count: U256 = contract.query("getCount", (), None, Options::default(), None).await?;
+        Ok(count)
+    }
+
+    pub async fn increment_counter(&self, web3_url: &str, contract_address: &str) -> Result<H256, Box<dyn std::error::Error>> {
+        let http = Http::new(web3_url)?;
+        let web3 = web3::Web3::new(http);
+        
+        let abi = include_bytes!("contracts_abi/counter_abi.json");
+        let contract_address = Address::from_str(contract_address)?;
+        let contract = Contract::from_json(web3.eth(), contract_address, abi)?;
+        
+        let options = Options::default();
+        let increment_tx = contract.signed_call("increment", (), options, &self.private_key).await?;
+        
+        // Перевірка статусу транзакції
+        loop {
+            if let Some(receipt) = web3.eth().transaction_receipt(increment_tx).await? {
+                if receipt.status == Some(U64::from(1)) {
+                    return Ok(increment_tx);
+                } else {
+                    return Err("Transaction failed".into());
+                }
+            }
+            // В очікуванні підтвердження транзакції
+            tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        }
+    }
+    
+
 }
