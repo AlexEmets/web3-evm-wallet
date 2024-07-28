@@ -92,7 +92,7 @@ impl Wallet {
         let http = Http::new(web3_url)?;
         let web3 = web3::Web3::new(http);
         
-        let abi = include_bytes!("contracts_abi/counter_abi.json");
+        let abi = include_bytes!("contracts/ABIs/counter_abi.json");
         let contract_address = Address::from_str(contract_address)?;
         let contract = Contract::from_json(web3.eth(), contract_address, abi)?;
 
@@ -104,26 +104,23 @@ impl Wallet {
         let http = Http::new(web3_url)?;
         let web3 = web3::Web3::new(http);
         
-        let abi = include_bytes!("contracts_abi/counter_abi.json");
+        let abi = include_bytes!("contracts/ABIs/counter_abi.json");
         let contract_address = Address::from_str(contract_address)?;
         let contract = Contract::from_json(web3.eth(), contract_address, abi)?;
         
         let options = Options::default();
-        let increment_tx = contract.signed_call("increment", (), options, &self.private_key).await?;
+        let confirmations = 3; 
+    
+        let receipt = contract.signed_call_with_confirmations("increment", (), options,  confirmations, &self.private_key,).await?;
         
-        // Перевірка статусу транзакції
-        loop {
-            if let Some(receipt) = web3.eth().transaction_receipt(increment_tx).await? {
-                if receipt.status == Some(U64::from(1)) {
-                    return Ok(increment_tx);
-                } else {
-                    return Err("Transaction failed".into());
-                }
-            }
-            // В очікуванні підтвердження транзакції
-            tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        if receipt.status == Some(U64::from(1)) {
+            Ok(receipt.transaction_hash)
+        } else {
+            Err("Transaction failed".into())
         }
     }
+    
+    
     
 
 }
