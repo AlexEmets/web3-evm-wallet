@@ -27,11 +27,13 @@ impl ContractsManager {
             "0xc6BCF9F0eaD0291e9e6D0cbD4aA4ca4Fa751707B".to_string(),
             "/home/oleksandryemets/Documents/Studying/CryptoWallet/src/contracts/ABIs/counter_abi.json".to_string()
         ));
+
         result_list.push(SmartContract::new(
             "Voting".to_string(),
             "address".to_string(),
-            "/home/oleksandryemets/Documents/Studying/CryptoWallet/src/contracts/ABIs/voting.json".to_string()
+            "/home/oleksandryemets/Documents/Studying/CryptoWallet/src/contracts/ABIs/voting_abi.json".to_string()
         ));
+
         result_list
     }
 
