@@ -1,14 +1,17 @@
 mod wallet;
 mod utils;
+mod contracts_manager;
+mod smart_contract;
 
 use std::io::{self, Write};
 use web3::types::U256;
 use wallet::Wallet;
+use contracts_manager::ContractsManager;
+
 
 #[tokio::main]
 async fn main() {
     let mut wallet = Wallet::new();
-    let testnet_url = "https://sepolia.infura.io/v3/5baff4d94a624341b63eca02b95a2b1c";
 
     loop {
         println!("1. Create new wallet");
@@ -16,8 +19,9 @@ async fn main() {
         println!("3. Save wallet to file");
         println!("4. Check balance");
         println!("5. Send transaction");
-        println!("6. Get Counter value");
-        println!("7. Increment Counter value");
+        println!("6. Smart Contract execution");
+        println!("7. Get Counter value");
+        println!("8. Increment Counter value");
         println!("0. Exit");
 
         print!("Enter choice: ");
@@ -49,7 +53,7 @@ async fn main() {
                 println!("Wallet saved.");
             }
             4 => {
-                wallet.check_balance(testnet_url).await;
+                wallet.check_balance().await;
             }
             5 => {
                 print!("Enter recipient address: ");
@@ -63,18 +67,25 @@ async fn main() {
                 io::stdin().read_line(&mut amount).unwrap();
                 let amount: U256 = amount.trim().parse().unwrap();
 
-                wallet.send_transaction(to.trim(), amount, testnet_url).await;
+                wallet.send_transaction(to.trim(), amount).await;
             }
             6 => {
-                print!("Enter Counter contract address: ");
-                io::stdout().flush().unwrap();
-                let mut contract_address = String::new();
-                io::stdin().read_line(&mut contract_address).unwrap();
-                
-                match wallet.get_counter(testnet_url, contract_address.trim()).await {
-                    Ok(count) => println!("Current counter value: {}", count),
-                    Err(e) => eprintln!("Error getting counter value: {:?}", e),
+                println!("This wallet supports following contracts: ");
+                let sc_list = wallet.sc_manager.get_contracts_list();
+
+                for sc in sc_list.iter() {
+                    // TODO implement Display trait
+                    println!("\n--------");
+                    println!("Name : {}", sc.get_name());
+                    print!("Functions : ");
+                    let funcs_for_sc = sc.get_functions();
+                    for func in funcs_for_sc {
+                        print!("{} ", func);
+                    }
+                    println!("\n--------");
                 }
+
+                // TODO read SC name and SC function and then call it with specific params
             }
             7 => {
                 print!("Enter Counter contract address: ");
@@ -82,7 +93,18 @@ async fn main() {
                 let mut contract_address = String::new();
                 io::stdin().read_line(&mut contract_address).unwrap();
                 
-                match wallet.increment_counter(testnet_url, contract_address.trim()).await {
+                match wallet.get_counter(contract_address.trim()).await {
+                    Ok(count) => println!("Current counter value: {}", count),
+                    Err(e) => eprintln!("Error getting counter value: {:?}", e),
+                }
+            }
+            8 => {
+                print!("Enter Counter contract address: ");
+                io::stdout().flush().unwrap();
+                let mut contract_address = String::new();
+                io::stdin().read_line(&mut contract_address).unwrap();
+                
+                match wallet.increment_counter(contract_address.trim()).await {
                     Ok(tx_hash) => println!("Increment transaction sent with hash: {:?}", tx_hash),
                     Err(e) => eprintln!("Error incrementing counter: {:?}", e),
                 }
