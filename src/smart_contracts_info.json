@@ -1,0 +1,12 @@
+[
+    {
+      "name": "Counter",
+      "address": "0xc6BCF9F0eaD0291e9e6D0cbD4aA4ca4Fa751707B",
+      "abi_path": "/home/oleksandryemets/Documents/Studying/CryptoWallet/src/contracts/ABIs/counter_abi.json"
+    },
+    {
+      "name": "Voting",
+      "address": "address",
+      "abi_path": "/home/oleksandryemets/Documents/Studying/CryptoWallet/src/contracts/ABIs/voting_abi.json"
+    }
+  ]
